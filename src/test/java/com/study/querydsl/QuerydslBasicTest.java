@@ -13,6 +13,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.assertj.core.api.Assertions;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.study.querydsl.entity.QMember.member;
+
 @SpringBootTest
 @Transactional
 public class QuerydslBasicTest {
@@ -55,12 +57,10 @@ public class QuerydslBasicTest {
     public void startQuerydsl(){
         JPAQueryFactory queryFactory = new JPAQueryFactory(em);
 
-        QMember m = new QMember("m");
-
         Member findMember = queryFactory
-                .select(m)
-                .from(m)
-                .where(m.username.eq("member1"))
+                .select(member)
+                .from(member)
+                .where(member.username.eq("member1"))
                 .fetchOne();
 
         Assertions.assertThat(findMember.getUsername()).isEqualTo("member1");
