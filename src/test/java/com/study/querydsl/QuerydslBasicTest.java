@@ -1,6 +1,7 @@
 package com.study.querydsl;
 
 import com.querydsl.core.QueryFactory;
+import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.querydsl.entity.Member;
 import com.study.querydsl.entity.QMember;
@@ -14,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.assertj.core.api.Assertions;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static com.study.querydsl.entity.QMember.member;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -113,4 +116,45 @@ public class QuerydslBasicTest {
         member.username.contains("member") // like ‘%member%’ 검색
         member.username.startsWith("member") //like ‘member%’ 검색
      */
+
+    @Test
+    public void resultFetch(){
+//        List<Member> fetch = queryFactory.selectFrom(member)
+//                .fetch();
+//
+//        Member fetchone = queryFactory.selectFrom(member)
+//                .fetchOne();
+//
+//        Member fetchFirst = queryFactory.selectFrom(member)
+//                .fetchFirst();
+        // *****************************************************************
+        // *****************************************************************
+        // *****************************************************************
+        // deprecated!! fetchResults() -> fetch()
+        // *****************************************************************
+//        QueryResults<Member> fetchResults = queryFactory.selectFrom(member)
+//                .fetchResults();
+//        fetchResults.getTotal();
+//        List<Member> content = fetchResults.getResults();
+
+        /*
+            QueryResult.getOffset() or .getLimit() 사용하지 않는 경우라면 fetch()
+            성능적 이점이 있다.
+         */
+
+        // *****************************************************************
+        // *****************************************************************
+        // *****************************************************************
+        // deprecated!! fetchCount() -> fetch().size()
+        // *****************************************************************
+        // *****************************************************************
+        // *****************************************************************
+        // For large result sets this may come at a severe performance **penalty**.
+//        long total = queryFactory.selectFrom(member)
+//                .fetchCount();
+
+        int size = queryFactory.selectFrom(member)
+                .fetch().size();
+
+    }
 }
