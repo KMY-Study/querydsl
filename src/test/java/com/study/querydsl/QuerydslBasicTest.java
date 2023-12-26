@@ -92,6 +92,7 @@ public class QuerydslBasicTest {
                 .fetchOne();
         assertThat(findMember.getUsername()).isEqualTo("member1");
     }
+
     /*
         member.username.eq("member1") // username = 'member1'
         member.username.ne("member1") //username != 'member1'
