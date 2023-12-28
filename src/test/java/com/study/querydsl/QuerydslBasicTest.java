@@ -260,4 +260,39 @@ public class QuerydslBasicTest {
         assertThat(teamB.get(member.age.avg())).isEqualTo(15);
 
     }
+
+    @Test
+    @DisplayName("팀 A에 소속된 모든 회원")
+    public void join() throws Exception{
+        List<Member> result = queryFactory.selectFrom(member)
+                .leftJoin(member.team, team) // join, innerjoin, leftjoin etc...
+                .where(team.name.eq("TeamA"))
+                .fetch();
+        assertThat(result)
+                .extracting("username")
+                .containsExactly("member1", "member2");
+    }
+
+    /*
+     * 연관관계없는 조인 테스트
+     *
+     * left,outer join --> X 무적건 inner join?
+     * 외부조인 불가능 -> on 으로 외부조인 가능
+     */
+    @Test
+    @DisplayName("회원의 이름과 팀 이름과 같은 회원조회")
+    public void theta_join() throws Exception{
+        em.persist(new Member("TeamA"));
+        em.persist(new Member("TeamB"));
+        em.persist(new Member("TeamC"));
+
+        List<Member> result = queryFactory.select(member)
+                .from(member, team)
+                .where(member.username.eq(team.name))
+                .fetch();
+
+        assertThat(result)
+                .extracting("username")
+                .containsExactly("TeamA", "TeamB");
+    }
 }
