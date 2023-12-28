@@ -12,6 +12,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,6 +36,7 @@ public class QuerydslBasicTest {
     JPAQueryFactory queryFactory;
 
     @BeforeEach
+    @DisplayName("실행전 먼저 실행")
     public void before(){
         queryFactory = new JPAQueryFactory(em);
         Team teamA = new Team("TeamA");
@@ -56,6 +58,7 @@ public class QuerydslBasicTest {
     }
 
     @Test
+    @DisplayName("JPQL을 이용한 테스트")
     public void startJPQL(){
         //member1
         Member findMember = em.createQuery("select m from Member m where m.username = :username", Member.class)
@@ -66,6 +69,7 @@ public class QuerydslBasicTest {
     }
 
     @Test
+    @DisplayName("QueryDSL을 이용한 테스트")
     public void startQuerydsl(){
         Member findMember = queryFactory
                 .select(member)
@@ -79,6 +83,7 @@ public class QuerydslBasicTest {
 
     //.and Chaining
     @Test
+    @DisplayName("Search1 where내 .and() 사용")
     public void search(){
         Member findMember = queryFactory.selectFrom(member)
                 .where(member.username.eq("member1")
@@ -89,6 +94,7 @@ public class QuerydslBasicTest {
 
     //.where내 파라미터로 주어도 .and Chaining과 동일하게 적용됨.
     @Test
+    @DisplayName("Search1 where내 ,를 이용")
     public void searchAndParam(){
         Member findMember = queryFactory.selectFrom(member)
                 .where(
@@ -121,6 +127,7 @@ public class QuerydslBasicTest {
      */
 
     @Test
+    @DisplayName("result종류 테스트")
     public void resultFetch(){
 //        List<Member> fetch = queryFactory.selectFrom(member)
 //                .fetch();
@@ -162,6 +169,7 @@ public class QuerydslBasicTest {
     }
 
     @Test
+    @DisplayName("sort활용 테스트")
     public void sort(){
         em.persist(new Member(null, 100));
         em.persist(new Member("member5", 100));
@@ -172,9 +180,9 @@ public class QuerydslBasicTest {
                 .orderBy(member.age.desc(), member.username.asc().nullsFirst())
                 .fetch();
 
-        Member member5 = result.get(0);
-        Member member6 = result.get(1);
-        Member memberNull = result.get(2);
+        Member member5 = result.get(1);
+        Member member6 = result.get(2);
+        Member memberNull = result.get(0);
 
         assertThat(member5.getUsername()).isEqualTo("member5");
         assertThat(member6.getUsername()).isEqualTo("member6");
@@ -182,6 +190,7 @@ public class QuerydslBasicTest {
     }
 
     @Test
+    @DisplayName("paging처리, offset,limit")
     public void paging(){
         List<Member> fetch = queryFactory.selectFrom(member)
                 .orderBy(member.username.desc())
@@ -194,6 +203,7 @@ public class QuerydslBasicTest {
 
     //전체 조회시?
     @Test
+    @DisplayName("QueryResults 활용 테스트")
     public void paging2(){
         QueryResults<Member> fetchResults = queryFactory.selectFrom(member)
                 .orderBy(member.username.desc())
@@ -208,6 +218,7 @@ public class QuerydslBasicTest {
     }
 
     @Test
+    @DisplayName("집합 function 테스트")
     public void aggregation(){
         List<Tuple> result = queryFactory
                 .select(
@@ -228,12 +239,9 @@ public class QuerydslBasicTest {
         assertThat(tuple.get(member.age.min())).isEqualTo(10);
     }
 
-    /*
-     * 팀의 이름과 각 팀의 평균 연령을 규해라
-     */
     @Test
+    @DisplayName("팀의 이름과 각 팀의 평균 연령을 구해라")
     public void groupby() throws Exception{
-        //given
         List<Tuple> result = queryFactory
                 .select(team.name, member.age.avg())
                 .from(member)
@@ -251,8 +259,5 @@ public class QuerydslBasicTest {
         assertThat(teamB.get(team.name)).isEqualTo("TeamB");
         assertThat(teamB.get(member.age.avg())).isEqualTo(15);
 
-
-        //when
-        //then
     }
 }
