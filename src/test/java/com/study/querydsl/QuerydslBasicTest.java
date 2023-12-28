@@ -3,6 +3,7 @@ package com.study.querydsl;
 import com.querydsl.core.QueryFactory;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.querydsl.entity.Member;
 import com.study.querydsl.entity.QMember;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static com.querydsl.jpa.JPAExpressions.*;
 import static com.study.querydsl.entity.QMember.member;
 import static com.study.querydsl.entity.QTeam.team;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -397,5 +399,88 @@ public class QuerydslBasicTest {
 
         boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
         assertThat(loaded).as("fetch join 미적용").isTrue();
+    }
+
+    @Test
+    @DisplayName("나이가 가장 많은 회원 조회")
+    public void subQuery() throws Exception{
+
+        QMember memberSub = new QMember("memberSub");
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .where(member.age.eq(
+                        select(memberSub.age.max())
+                                .from(memberSub)
+                ))
+                .fetch();
+
+        assertThat(result).extracting("age").containsExactly(20,20);
+    }
+    @Test
+    @DisplayName("나이가 평균이상인 회원 조회")
+    public void subQueryGoe() throws Exception{
+
+        QMember memberSub = new QMember("memberSub");
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .where(member.age.goe(
+                        select(memberSub.age.avg())
+                                .from(memberSub)
+                ))
+                .fetch();
+
+        assertThat(result).extracting("age").containsExactly(20,20);
+    }
+    @Test
+    @DisplayName("in 활용")
+    public void subQueryIn() throws Exception{
+
+        QMember memberSub = new QMember("memberSub");
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .where(member.age.in(
+                        select(memberSub.age)
+                                .from(memberSub)
+                                .where(memberSub.age.gt(10))
+                ))
+                .fetch();
+
+        assertThat(result).extracting("age").containsExactly(20,20);
+    }
+
+    @Test
+    @DisplayName("select절 SubQuery 예제")
+    public void selectSubQuery() throws Exception{
+        QMember memberSub = new QMember("memberSub");
+
+        List<Tuple> result = queryFactory
+                .select(member.username,
+                        select(memberSub.age.avg())
+                                .from(memberSub)
+                )
+                .from(member)
+                .fetch();
+
+        for(Tuple tuple : result){
+            System.out.println("tutple :" + tuple);
+        }
+        /* 결과값
+            tutple :[member1, 15.0]
+            tutple :[member2, 15.0]
+            tutple :[member3, 15.0]
+            tutple :[member4, 15.0]
+         */
+
+        /*
+            JPA JPQL의 서브쿼리는 ->>> 인라인뷰 SubQuery 안됨.. ( From절 SubQuery )
+         */
+        // 1. SubQuery를 Join으로 변경,,,권장
+        // 2. 쿼리 분리
+        // 3. nativeQuery.. JPA..
+
+        // ** 데이터를 가져오는것에 대한 집중? concept..
     }
 }
