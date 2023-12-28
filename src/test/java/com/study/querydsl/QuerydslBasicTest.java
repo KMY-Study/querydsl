@@ -295,4 +295,71 @@ public class QuerydslBasicTest {
                 .extracting("username")
                 .containsExactly("TeamA", "TeamB");
     }
+
+    /*
+     * JPQL: select m, t from Member m left join m.team t on t.name = 'teamA'
+     */
+    @Test
+    @DisplayName("회원과 팀을 조인하면서 팀이름이 teamA인 팀만 조인, 회원은 모두 조회")
+    public void join_on_filtering() throws Exception{
+        //given
+        List<Tuple> result = queryFactory
+                .select(member, team)
+                .from(member)
+                .leftJoin(member.team, team).on(team.name.eq("TeamA"))
+//                .join(member.team, team).on(team.name.eq("TeamA")) //#1 inner join
+//                .join(member.team, team) //#2
+//                .where(team.name.eq("TeamA"))
+                /*
+                  on 절을 활용해 조인 대상을 필터링 할 때,
+                  외부조인이 아니라 내부조인(inner join)을 사용하면,
+                  where 절 에서 필터링 하는 것과 기능이 동일
+                 */
+                .fetch();
+
+        for(Tuple tuple : result){
+            System.out.println("tuple : " + tuple);
+        }
+        /*
+        .leftJoin(member.team, team).on(team.name.eq("TeamA")) 경우
+            tuple : [Member(id=1, username=member1, age=10), Team(id=1, name=TeamA)]
+            tuple : [Member(id=2, username=member2, age=20), Team(id=1, name=TeamA)]
+            tuple : [Member(id=3, username=member3, age=10), null]
+            tuple : [Member(id=4, username=member4, age=20), null]
+         */
+    }
+
+    /*
+        연관관계 없는 엔티티 외부조인,,
+     */
+    @Test
+    @DisplayName("회원의 이름이 팀 이름과 같은 대상 외부조인")
+    public void join_on_no_relation() throws Exception{
+        em.persist(new Member("TeamA"));
+        em.persist(new Member("TeamB"));
+        em.persist(new Member("TeamC"));
+
+        List<Tuple> result = queryFactory.select(member,team)
+                .from(member)
+                .leftJoin(team).on(member.username.eq(team.name))
+                .fetch();
+
+        for(Tuple tuple : result){
+            System.out.println("tuple : " + tuple);
+        }
+        /* 차이점.
+            leftJoin(member.team, team)
+            from(member).leftJoin(team).on(~~~)
+         */
+
+        /*
+            tuple : [Member(id=1, username=member1, age=10), null]
+            tuple : [Member(id=2, username=member2, age=20), null]
+            tuple : [Member(id=3, username=member3, age=10), null]
+            tuple : [Member(id=4, username=member4, age=20), null]
+            tuple : [Member(id=5, username=TeamA, age=0), Team(id=1, name=TeamA)]
+            tuple : [Member(id=6, username=TeamB, age=0), Team(id=2, name=TeamB)]
+            tuple : [Member(id=7, username=TeamC, age=0), null]
+         */
+    }
 }
