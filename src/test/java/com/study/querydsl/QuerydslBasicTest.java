@@ -9,7 +9,9 @@ import com.study.querydsl.entity.QMember;
 import com.study.querydsl.entity.QTeam;
 import com.study.querydsl.entity.Team;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceUnit;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -361,5 +363,39 @@ public class QuerydslBasicTest {
             tuple : [Member(id=6, username=TeamB, age=0), Team(id=2, name=TeamB)]
             tuple : [Member(id=7, username=TeamC, age=0), null]
          */
+    }
+
+    @PersistenceUnit
+    EntityManagerFactory emf;
+
+    @Test
+    @DisplayName("fetch Join 미적용시")
+    public void fetchJoinNo() throws Exception{
+        em.flush();
+        em.clear();
+
+        Member findMember = queryFactory
+                .selectFrom(member)
+                .where(member.username.eq("member1"))
+                .fetchOne();
+
+        boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+        assertThat(loaded).as("fetch join 미적용").isFalse();
+    }
+
+    @Test
+    @DisplayName("fetch Join 적용시")
+    public void fetchJoinUse() throws Exception{
+        em.flush();
+        em.clear();
+
+        Member findMember = queryFactory
+                .selectFrom(member)
+                .join(member.team, team).fetchJoin() // <- 연관관계 다떙겨옴
+                .where(member.username.eq("member1"))
+                .fetchOne();
+
+        boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+        assertThat(loaded).as("fetch join 미적용").isTrue();
     }
 }
