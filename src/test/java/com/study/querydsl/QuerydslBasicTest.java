@@ -3,6 +3,7 @@ package com.study.querydsl;
 import com.querydsl.core.QueryFactory;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.querydsl.entity.Member;
@@ -482,5 +483,43 @@ public class QuerydslBasicTest {
         // 3. nativeQuery.. JPA..
 
         // ** 데이터를 가져오는것에 대한 집중? concept..
+    }
+    
+    @Test
+    @DisplayName("회원의 나이별로 출력")
+    public void basicCase() throws Exception{
+        //given
+        List<String> result = queryFactory
+                .select(member.age
+                        .when(10).then("열살")
+                        .when(20).then("스무살")
+                        .otherwise("기타")
+                )
+                .from(member)
+                .fetch();
+        //when
+        //then
+        for(String s : result){
+            System.out.println("Str :: " + s);
+        }
+    }
+    
+    @Test
+    @DisplayName("CaseBuilder를 이용한 case문 처리")
+    public void complexCase() throws Exception{
+        //given
+        List<String> result = queryFactory
+                .select(new CaseBuilder()
+                        .when(member.age.between(0, 20)).then("0~20살")
+                        .when(member.age.between(21, 31)).then("21~30살")
+                        .otherwise("기타")
+                )
+                .from(member)
+                .fetch();
+        //when
+        //then
+        for(String s : result){
+            System.out.println("Str :: " + s);
+        }
     }
 }
