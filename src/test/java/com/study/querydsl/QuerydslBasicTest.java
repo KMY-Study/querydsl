@@ -11,6 +11,7 @@ import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.querydsl.dto.MemberDto;
+import com.study.querydsl.dto.QMemberDto;
 import com.study.querydsl.dto.UserDto;
 import com.study.querydsl.entity.Member;
 import com.study.querydsl.entity.QMember;
@@ -734,6 +735,35 @@ public class QuerydslBasicTest {
         }
     }
 
+
+    @Test
+    @DisplayName("QueryProjection테스트")
+    public void findDtoByQueryProjection() throws Exception{
+        //given
+        List<MemberDto> result = queryFactory
+                .select(new QMemberDto(member.username, member.age))
+                .from(member)
+                .fetch();
+
+        //when
+        //then
+        for(MemberDto dto : result){
+            System.out.println("MemberDto :: " + dto);
+        }
+    }
+    
+    @Test
+    @DisplayName("distinct 테스트")
+    public void distinctTest() throws Exception{
+        //given
+        Integer age = queryFactory.select(member.age).distinct()
+                .from(member)
+                .where(member.age.eq(10))
+                .fetchOne();
+        //when
+        //then
+        assertThat(age).isEqualTo(10);
+    }
 
 
 }
