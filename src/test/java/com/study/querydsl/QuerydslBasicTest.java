@@ -4,6 +4,8 @@ import com.querydsl.core.QueryFactory;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.querydsl.entity.Member;
@@ -515,6 +517,65 @@ public class QuerydslBasicTest {
                         .otherwise("기타")
                 )
                 .from(member)
+                .fetch();
+        //when
+        //then
+        for(String s : result){
+            System.out.println("Str :: " + s);
+        }
+    }
+
+    /*
+        복잡한 조건은 변수로 선언해서 재사용성을 높히거나, 결합도를 낮춘다
+     */
+    @Test
+    @DisplayName("복잡조건 변수처리한 테스트")
+    public void orderByUseCase() throws Exception{
+        //given
+        NumberExpression<Integer> rankPath = new CaseBuilder()
+                .when(member.age.between(0,20)).then(2)
+                .when(member.age.between(21,30)).then(1)
+                .otherwise(3);
+
+        List<Tuple> result = queryFactory
+                .select(member.username, member.age, rankPath)
+                .from(member)
+                .orderBy(rankPath.desc())
+                .fetch();
+        //when
+        //then
+        for(Tuple tuple : result){
+            String username = tuple.get(member.username);
+            Integer age = tuple.get(member.age);
+            Integer rank = tuple.get(rankPath);
+            System.out.println("username = " + username + " age = " + age + " rank = " +
+                    rank);
+        }
+    }
+
+    @Test
+    @DisplayName("상수테스트")
+    public void constant() throws Exception{
+        //given
+        List<Tuple> result = queryFactory
+                .select(member.username, Expressions.constant("A"))
+                .from(member)
+                .fetch();
+        //when
+        //then
+        for(Tuple t : result){
+            System.out.println("Str :: " + t);
+        }
+    }
+    
+    @Test
+    @DisplayName("쿼리결과와 여러타입의 concat테스트")
+    public void concat() throws Exception{
+        //given
+        List<String> result = queryFactory
+                .select(member.username.concat("___").concat(member.age.stringValue()))
+                .from(member)
+                .where(member.username.eq("member1"))
                 .fetch();
         //when
         //then
