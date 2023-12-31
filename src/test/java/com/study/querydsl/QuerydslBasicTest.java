@@ -583,4 +583,37 @@ public class QuerydslBasicTest {
             System.out.println("Str :: " + s);
         }
     }
+
+    @Test
+    @DisplayName("단일 타입의 리턴 Projection테스트")
+    public void simpleProjection() throws Exception{
+        //given
+        List<String> result = queryFactory
+                .select(member.username)
+                .from(member)
+                .fetch();
+        //then
+        for(String s : result){
+            System.out.println("Str :: " + s);
+        }
+    }
+
+    @Test
+    @DisplayName("두가지 이상의 타입 리턴 Projection테스트")
+    public void tupleProjection() throws Exception{
+        //given
+        List<Tuple> result = queryFactory
+                .select(member.username, member.age)
+                .from(member)
+                .fetch();
+        //when
+        //then
+        for(Tuple t : result){
+            String name = t.get(member.username);
+            Integer age = t.get(member.age);
+            System.out.println("username : " + name);
+            System.out.println("age : " + age);
+        }
+    }
+
 }
