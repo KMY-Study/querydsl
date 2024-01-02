@@ -1,5 +1,6 @@
 package com.study.querydsl;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryFactory;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
@@ -763,6 +764,40 @@ public class QuerydslBasicTest {
         //when
         //then
         assertThat(age).isEqualTo(10);
+    }
+
+    /*
+        동적쿼리_BooleanBuilder
+     */
+    @Test
+    @DisplayName("")
+    public void dynamicQuery_BooleanBuilder() throws Exception{
+        //given
+        String usernameParam = "member1";
+        Integer ageParam = 10; // 1. null <- searchMember1에서 동적으로 쿼리가능.
+
+        List<Member> result = searchMember1(usernameParam, ageParam);
+
+        //when
+        //then
+        assertThat(result.size()).isEqualTo(1);
+    }
+
+    private List<Member> searchMember1(String usernameParam, Integer ageParam) {
+        BooleanBuilder builder = new BooleanBuilder();
+//        BooleanBuilder builder = new BooleanBuilder(member.username.eq(usernameParam)); // 2. 초기값 설정 가능
+
+        if(usernameParam != null){
+            builder.and(member.username.eq(usernameParam));
+        }
+
+        if(ageParam != null){
+            builder.and(member.age.eq(ageParam));
+        }
+
+        return queryFactory.selectFrom(member)
+                .where(builder)
+                .fetch();
     }
 
 
