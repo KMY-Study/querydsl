@@ -1,33 +1,32 @@
 package com.study.querydsl;
 
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.QueryFactory;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.ExpressionUtils;
-import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.*;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+
+
+import com.querydsl.jpa.sql.JPASQLQuery;
 import com.study.querydsl.dto.MemberDto;
 import com.study.querydsl.dto.QMemberDto;
 import com.study.querydsl.dto.UserDto;
 import com.study.querydsl.entity.Member;
 import com.study.querydsl.entity.QMember;
-import com.study.querydsl.entity.QTeam;
 import com.study.querydsl.entity.Team;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceUnit;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.assertj.core.api.Assertions;
+import org.springframework.jdbc.object.SqlQuery;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -63,10 +62,15 @@ public class QuerydslBasicTest {
         Member member3 = new Member("member3", 10, teamB);
         Member member4 = new Member("member4", 20, teamB);
 
+        Member member5 = new Member("1.0.3", 30, teamB);
+        Member member6 = new Member("1.0.11", 40, teamB);
+
         em.persist(member1);
         em.persist(member2);
         em.persist(member3);
         em.persist(member4);
+        em.persist(member5);
+        em.persist(member6);
     }
 
     @Test
@@ -935,6 +939,36 @@ public class QuerydslBasicTest {
         //when
         //then
         for(String res : result){
+            System.out.println(res);
+        }
+    }
+
+    /*
+        extra sql function Test -> postgres
+        목표 :: lpad(sqlit_part('','.','1'), '2', '0')
+     */
+    @Test
+    @DisplayName("lpad와 split_part를 중첩하고 싶은 테스트")
+    public void sqlfunc3() throws Exception{
+
+        List<Tuple> result = queryFactory
+                .select(
+//                        Expressions.stringTemplate("lpad({0}, {1}, {2})",
+//                                Expressions.stringTemplate("split_part({0},{1},{2})", member.username, ".", 1),
+//                                2,
+//                                '0')
+//                        ,
+                        Expressions.stringTemplate("lpad({0},{1},{2})", '3', 2, '0'),
+                        member.username,
+                        Expressions.stringTemplate("split_part({0},{1},{2})", member.username, ".", 1),
+                        Expressions.stringTemplate("split_part({0},{1},{2})", member.username, ".", 2),
+                        Expressions.stringTemplate("split_part({0},{1},{2})", member.username, ".", 3)
+                )
+                .from(member)
+                .where(member.age.eq(30))
+                .fetch();
+
+        for(Tuple res : result){
             System.out.println(res);
         }
     }
