@@ -877,5 +877,31 @@ public class QuerydslBasicTest {
         //then
     }
 
+    @Test
+    @DisplayName("")
+    public void bulkAdd() throws Exception{
+        //given
+        long execute = queryFactory
+                .update(member)
+//                .set(member.age, member.age.add(1))
+                .set(member.age, member.age.multiply(3))
+                .execute();
+
+        //when
+        //then
+    }
+    
+    @Test
+    @DisplayName("")        
+    public void buldDelte() throws Exception{
+        //given
+        queryFactory
+                .delete(member)
+                .where(member.age.gt(18))
+                .execute();
+        //when
+        //then
+    }
+
 
 }
