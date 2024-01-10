@@ -57,8 +57,8 @@ public class QuerydslBasicTest {
         em.persist(teamA);
         em.persist(teamB);
 
-        Member member1 = new Member("member1", 10, teamA);
-        Member member2 = new Member("member2", 20, teamA);
+        Member member1 = new Member("memBer1", 10, teamA);
+        Member member2 = new Member("memBer2", 20, teamA);
 
         Member member3 = new Member("member3", 10, teamB);
         Member member4 = new Member("member4", 20, teamB);
@@ -901,6 +901,42 @@ public class QuerydslBasicTest {
                 .execute();
         //when
         //then
+    }
+
+    @Test
+    @DisplayName("replace function")
+    public void sqlfunc1() throws Exception{
+        //given
+        List<String> result = queryFactory
+                .select(Expressions.stringTemplate(
+                        "function('replace', {0}, {1}, {2})",
+                        member.username, "member", "M"))
+                .from(member)
+                .fetch();
+        //when
+        //then
+        for(String res : result){
+            System.out.println(res);
+        }
+    }
+
+    @Test
+    @DisplayName("lower")
+    public void sqlfunc2() throws Exception{
+        //given
+        List<String> result = queryFactory
+                .select(member.username)
+                .from(member)
+                .where(member.username.eq(
+                        Expressions.stringTemplate("function('lower', {0})", member.username))
+                )
+                .where(member.username.eq(member.username.lower()))
+                .fetch();
+        //when
+        //then
+        for(String res : result){
+            System.out.println(res);
+        }
     }
 
 
