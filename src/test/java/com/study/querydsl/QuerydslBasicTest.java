@@ -7,10 +7,7 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.core.types.dsl.*;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.querydsl.dto.MemberDto;
@@ -837,6 +834,48 @@ public class QuerydslBasicTest {
         return usernameEq(usernameParam).and(ageEq(ageParam));
     }
 
+    
+    @Test
+    @DisplayName("")        
+    public void bulkUpdate() throws Exception{
+
+        /* 전
+            member1 = 10 -> 비회원
+            member2 = 20 -> 비회원
+            member3 = 30 -> 유지
+            member4 = 40 -> 유지
+         */
+        //given
+        long count = queryFactory
+                .update(member)
+                .set(member.username, "비회원")
+                .where(member.age.lt(28))
+                .execute();
+
+        //영속성 컨텍스트에 entity가 올라가있다..
+        //bulk 연산은 DB에 바로 적재,, 영속성 컨텍스트와 불일치 상태,,
+
+        /* 후
+            member1 = 10 -> member1
+            member2 = 20 -> member2
+            member3 = 30 -> member3
+            member4 = 40 -> member4
+         */
+
+        em.flush(); em.clear(); // bulk 연산후 영속성 컨테스트 초기화 필요,,, 디비와 일치시키기
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .fetch();
+
+        for(Member m : result){
+            System.out.println(m);
+        }
+
+
+        //when
+        //then
+    }
 
 
 }
