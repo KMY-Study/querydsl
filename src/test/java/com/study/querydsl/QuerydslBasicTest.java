@@ -12,12 +12,11 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 
 
 import com.querydsl.jpa.sql.JPASQLQuery;
-import com.study.querydsl.dto.MemberDto;
-import com.study.querydsl.dto.QMemberDto;
-import com.study.querydsl.dto.UserDto;
+import com.study.querydsl.dto.*;
 import com.study.querydsl.entity.Member;
 import com.study.querydsl.entity.QMember;
 import com.study.querydsl.entity.Team;
+import com.study.querydsl.repository.MemberJpaRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.PersistenceContext;
@@ -25,6 +24,7 @@ import jakarta.persistence.PersistenceUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.object.SqlQuery;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +46,9 @@ public class QuerydslBasicTest {
 
     JPAQueryFactory queryFactory;
 
+    @Autowired
+    MemberJpaRepository memberJpaRepository;
+
     @BeforeEach
     @DisplayName("실행전 먼저 실행")
     public void before(){
@@ -59,18 +62,18 @@ public class QuerydslBasicTest {
         Member member1 = new Member("memBer1", 10, teamA);
         Member member2 = new Member("memBer2", 20, teamA);
 
-        Member member3 = new Member("member3", 10, teamB);
-        Member member4 = new Member("member4", 20, teamB);
+        Member member3 = new Member("member3", 30, teamB);
+        Member member4 = new Member("member4", 40, teamB);
 
-        Member member5 = new Member("1.0.3", 30, teamB);
-        Member member6 = new Member("1.0.11", 40, teamB);
+//        Member member5 = new Member("1.0.3", 30, teamB);
+//        Member member6 = new Member("1.0.11", 50, teamB);
 
         em.persist(member1);
         em.persist(member2);
         em.persist(member3);
         em.persist(member4);
-        em.persist(member5);
-        em.persist(member6);
+//        em.persist(member5);
+//        em.persist(member6);
     }
 
     @Test
@@ -976,6 +979,35 @@ public class QuerydslBasicTest {
             System.out.println(">>>>>>>>>>>>>>>>"+res.get(4, String.class));
         }
 
+    }
+
+    @Test
+    public void basic_querydsl_Test(){
+        Member member = new Member("member1", 100);
+        memberJpaRepository.save(member);
+
+        Member findMember = memberJpaRepository.findById(member.getId()).get();
+
+        assertThat(member.getUsername()).isEqualTo(findMember.getUsername());
+
+        List<Member> result1 = memberJpaRepository.findAll_querydsl();
+        assertThat(result1).containsExactly(member);
+
+        List<Member> result2 = memberJpaRepository.findByUsername_querydsl("member1");
+        assertThat(result2).containsExactly(member);
+    }
+
+    @Test
+    public void searchTest(){
+        MemberSearchCondition condition = new MemberSearchCondition();
+//        condition.setAgeGoe(35);
+//        condition.setAgeLoe(40);
+        condition.setTeamname("TeamB");
+
+        List<MemberTeamDto> result = memberJpaRepository.searchByBuilder(condition);
+
+//        assertThat(result).extracting("username").containsExactly("member4");
+        assertThat(result).extracting("username").containsExactly("member3","member4");
     }
 
 
