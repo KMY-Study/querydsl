@@ -958,19 +958,24 @@ public class QuerydslBasicTest {
 //                                2,
 //                                '0')
 //                        ,
-                        Expressions.stringTemplate("lpad({0},{1},{2})", '3', 2, '0'),
                         member.username,
-                        Expressions.stringTemplate("split_part({0},{1},{2})", member.username, ".", 1),
+                        Expressions.stringTemplate("lpad({0},{1},{2})", '3', 2, '0'),
+                        Expressions.stringTemplate("split_part({0},{1},{2})", member.username, ".", 1).as("test1"),
                         Expressions.stringTemplate("split_part({0},{1},{2})", member.username, ".", 2),
-                        Expressions.stringTemplate("split_part({0},{1},{2})", member.username, ".", 3)
+                        Expressions.stringTemplate("split_part({0},{1},{2})", member.username, ".", 3).as("test3")
                 )
                 .from(member)
                 .where(member.age.eq(30))
                 .fetch();
 
         for(Tuple res : result){
-            System.out.println(res);
+            System.out.println(">>>>>>>>>>>>>>>>"+res.get(0, String.class));
+            System.out.println(">>>>>>>>>>>>>>>>"+res.get(1, String.class));
+            System.out.println(">>>>>>>>>>>>>>>>"+res.get(2, String.class));
+            System.out.println(">>>>>>>>>>>>>>>>"+res.get(3, String.class));
+            System.out.println(">>>>>>>>>>>>>>>>"+res.get(4, String.class));
         }
+
     }
 
 
