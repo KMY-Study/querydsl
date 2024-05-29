@@ -1004,11 +1004,13 @@ public class QuerydslBasicTest {
 //        condition.setAgeLoe(40);
         condition.setTeamname("TeamB");
 
-        List<MemberTeamDto> result = memberJpaRepository.searchByBuilder(condition);
+//        List<MemberTeamDto> result = memberJpaRepository.searchByBuilder(condition);
+        List<MemberTeamDto> result = memberJpaRepository.search(condition);
 
 //        assertThat(result).extracting("username").containsExactly("member4");
         assertThat(result).extracting("username").containsExactly("member3","member4");
     }
+
 
 
 }
