@@ -4,6 +4,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.querydsl.entity.Member;
 import com.study.querydsl.entity.QMember;
 import jakarta.persistence.EntityManager;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,14 +13,16 @@ import java.util.Optional;
 import static com.study.querydsl.entity.QMember.*;
 
 @Repository
+@RequiredArgsConstructor
 public class MemberJpaRepository {
     private final EntityManager em;
     private final JPAQueryFactory queryFactory;
 
-    public MemberJpaRepository(EntityManager em) {
-        this.em = em;
-        this.queryFactory = new JPAQueryFactory(em); // SpringBean으로 등록가능.
-    }
+//    public MemberJpaRepository(EntityManager em, JPAQueryFactory queryFactory) {
+//        this.em = em;
+////        this.queryFactory = new JPAQueryFactory(em); // SpringBean으로 등록가능.
+//        this.queryFactory = queryFactory; // SpringBean으로 등록가능.
+//    }
 
     public void save(Member member){
         em.persist(member);
